@@ -3,13 +3,22 @@
 }
 html, body {
 	height: 100%;
+  font-family: 'Helvetica Neue';
+  background-color: #eee;
 }
 #drop_zone {
-  min-height: 150px;
-  border: 1px dotted gray;
+  margin: 20px;
+  min-height: 20%;
+  padding: 15%;
+  border: 10px dashed gray;
+  text-align: center;
+  font-size: 200%;
+  color: gray;
+
 }
-.files_hovering_over {
-  background-color:red;
+#drop_zone.files_hovering_over {
+  color: darkred;
+  background-color:lightgray;
 }
 
 #list {
@@ -17,32 +26,39 @@ html, body {
 }
 
 #list .scene {
-  background-color: lightgrey;
-  border: 1px solid darkgrey;
   padding: 10px;
-  margin: 10px;
+  float:left;
+}
+#list .scene img{
   max-height: 150px;
-  display:table;
 }
+#list .scene.miniature{
+  padding:5px;
+  margin:0px;
+}
+#list .scene.miniature img{
+  max-height: 70px;
+}
+
 #list .cluster {
+  margin: 20px;
   padding: 10px;
-  background-color: blue;
+  background-color: grey;
   display:table;
-  margin: 10px;
+  border-radius: 5px/5px;  
 }
-#list div.selected {
+
+#list .cluster.selected {
   background-color: red;
 }
 
-#list .scene img:nth-child(1) {
-  padding-right: 10px;
-  padding-left: 10px;
-}
 
 #footer {
+  font-size: 1.2em;
   background-color: lightgrey;
-  border-top: 1px solid black;
-  padding: 0.2em;
+  color: grey;
+  border-top: 1px solid grey;
+  padding: 0.4em;
   bottom:0;
   position:fixed;
   width: 100%;

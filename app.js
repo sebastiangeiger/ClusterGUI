@@ -103,8 +103,9 @@ $(function(){
       Clusters.setSelected(this.model);
     },
     addOne: function(scene){
-      var newSceneView = new SceneView({model: scene}); //Ideally I would just transfer the old view
-      this.$el.append(newSceneView.render().$el);
+      var newSceneView = new SceneView({model: scene}).render().$el; //Ideally I would just transfer the old view
+      newSceneView.addClass('miniature');
+      this.$el.append(newSceneView);
     }
   });
 
@@ -148,7 +149,6 @@ $(function(){
     uploadFile: function(evt){
       evt.stopPropagation();
       evt.preventDefault();
-      $(this.el).removeClass('files_hovering_over');
       $(this.el).slideUp();
       var files = evt.originalEvent.dataTransfer.files;
       _.map(files, function(file){
@@ -174,6 +174,7 @@ $(function(){
       event.stopPropagation();
       event.preventDefault();
       event.dataTransfer.dropEffect = 'link'; // Explicitly show this is a link.
+      $(this.el).text('Just like that!');
       $(this.el).addClass('files_hovering_over');
     },
 
@@ -182,6 +183,7 @@ $(function(){
       event.stopPropagation();
       event.preventDefault();
       $(this.el).removeClass('files_hovering_over');
+      this.$el.text("Drop image files here to get started!");
     }
   });
 
@@ -192,7 +194,7 @@ $(function(){
       this.clusterList = this.$("#list");
       this.footer = this.$("#footer");
       Clusters.bind('add', this.addOne, this);
-      // Clusters.bind('remove', this.remove, this);
+      Clusters.bind('remove', this.render, this);
       this.render();
     },
     render: function(){
