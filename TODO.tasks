@@ -1,0 +1,5 @@
+Improvements:
+  - Show the image in the footer when it's not entirely visible because the user scrolled out of the viewport
+  - Find a way to export the data
+  - Show a warning that the app has only been tested on FF, won't work on Chrome
+  - Only accept files for the upload
