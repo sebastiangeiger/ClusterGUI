@@ -1,0 +1,10 @@
+#drop_zone {
+  min-height: 150px;
+  border: 1px dotted gray;
+}
+.files_hovering_over {
+  background-color:red;
+}
+#list ul li img {
+  max-height: 150px;
+}
