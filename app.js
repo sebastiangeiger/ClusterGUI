@@ -6,14 +6,17 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 
 $(function(){
   var Image = Backbone.Model.extend({
-    initialize: function(file,url){
-      this.set({url:url,file:file});
-    } 
+    initialize: function(file){
+      this.set({file:file});
+    },
+    setUrl: function(url){
+      this.set({url:url});
+    }
   });
 
   var Scene = Backbone.Model.extend({
-    initialize: function(startImage){
-      this.set({startImage:startImage});
+    initialize: function(startImage,endImage){
+      this.set({startImage:startImage, endImage:endImage});
     } 
   });
 
@@ -29,12 +32,14 @@ $(function(){
   var Scenes = new SceneList();
 
   var SceneView = Backbone.View.extend({
-    tagName: "li",
+    tagName: "span",
     className: "scene",
-    template: _.template('start: <%= $(startImage).html() %> ... '),
     render: function() {
       var startImageView = new ImageView({model: this.model.get('startImage')});
-      $(this.el).html(this.template({startImage: startImageView.render().el}));
+      var endImageView = new ImageView({model: this.model.get('endImage')});
+      this.$el.append(startImageView.render().$el);
+      this.$el.append("...");
+      this.$el.append(endImageView.render().$el);
       return this;
     }
   });
@@ -42,10 +47,16 @@ $(function(){
   var ImageView = Backbone.View.extend({
     tagName: "span",
     className: "image",
-    template: _.template('<%= name %>: <img src="<%= imageSrc %>"/>'),
-
+    initialize: function(){
+      this.model.bind('change', this.render, this); 
+    },
+    template: _.template('<img src="<%= imageSrc %>"/>'),
     render: function() {
-      $(this.el).html(this.template({name: this.model.get('name'), imageSrc:this.model.get('url')}));
+      if(this.model.get('url')){
+        this.$el.html(this.template({name: this.model.get('name'), imageSrc:this.model.get('url')}));
+      } else {
+        this.$el.text("Loading...");
+      }
       return this;
     }
   });
@@ -61,20 +72,23 @@ $(function(){
       evt.stopPropagation();
       evt.preventDefault();
       $(this.el).removeClass('files_hovering_over');
+      $(this.el).slideUp();
       var files = evt.originalEvent.dataTransfer.files;
-
-      var reader = new FileReader();
       _.map(files, function(file){
         var reader = new FileReader();
-        reader.onload = (function(theFile){
+        var image = new Image(file);
+        Images.add(image)
+        reader.onload = (function(theImage){
           return function(event){
-            var image = new Image(theFile,event.target.result);
-            Images.add(image)
-            Scenes.add(new Scene(image));
+            theImage.setUrl(event.target.result)
           }
-        })(file);
+        })(image);
         reader.readAsDataURL(file);
       }); 
+      for(var i=0; i<Images.length; i+=2){
+        Scenes.add(new Scene(Images.at(i),Images.at(i+1)));
+      }
+
     },
 
     handleDragOver: function(evt) {
@@ -97,7 +111,7 @@ $(function(){
     el: $('body'),
     initialize: function(){
       this.dropZone = new DropZoneView;
-      this.sceneList = this.$("#list ul");
+      this.sceneList = this.$("#list");
       this.footer = this.$("#footer");
       Scenes.bind('add', this.addOne, this);
       this.render();
