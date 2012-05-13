@@ -20,8 +20,36 @@ $(function(){
     } 
   });
 
-  var SceneList = Backbone.Collection.extend({
-    model: Scene
+  var Cluster = Backbone.Model.extend({
+    initialize: function(scene){
+      this.set({scenes: [scene]});
+    },
+    select: function() {
+      this.set({selected:true});
+    },
+    unselect: function() {
+      this.set({selected:false});
+    },
+    merge: function(anotherCluster){
+      console.log("meeeergee");
+    }
+  });
+
+  var ClusterList = Backbone.Collection.extend({
+    model: Cluster,
+    setSelected: function(cluster){
+      if(!this.selectedCluster()){
+        cluster.select();
+      } else if (this.selectedCluster() === cluster) {
+        cluster.unselect();
+      } else {
+        this.selectedCluster().unselect();
+        cluster.merge(this.selectedCluster());
+      }
+    },
+    selectedCluster: function(){
+      return this.where({selected:true})[0];
+    }
   });
 
   var ImageList = Backbone.Collection.extend({
@@ -29,10 +57,39 @@ $(function(){
   });
 
   var Images = new ImageList();
-  var Scenes = new SceneList();
+  var Clusters = new ClusterList();
+
+  var ClusterView = Backbone.View.extend({
+    //Ideally Cluster would have been a collection, but since ClusterList already is one it doesn't work!
+    tagName: "div",
+    className: "cluster",
+    events: {
+      "click": "select"
+    },
+    initialize: function(){
+      this.model.bind('change', this.render, this);
+      this.firstTime = true; //Working around the fact that Cluster isn't a Collection
+    },
+    render: function() {
+      if(this.firstTime){
+        var sceneView = new SceneView({model: this.model.get('scenes')[0]});
+        this.$el.append(sceneView.render().$el);
+        this.firstTime = false;
+      }
+      if(this.model.get('selected') && !this.$el.hasClass('selected')){
+        this.$el.addClass('selected');
+      } else if (!this.model.get('selected') && this.$el.hasClass('selected')) {
+        this.$el.removeClass('selected');
+      }
+      return this;
+    },
+    select: function(){
+      Clusters.setSelected(this.model);
+    }
+  });
 
   var SceneView = Backbone.View.extend({
-    tagName: "span",
+    tagName: "div",
     className: "scene",
     render: function() {
       var startImageView = new ImageView({model: this.model.get('startImage')});
@@ -41,7 +98,7 @@ $(function(){
       this.$el.append("...");
       this.$el.append(endImageView.render().$el);
       return this;
-    }
+    },
   });
 
   var ImageView = Backbone.View.extend({
@@ -86,7 +143,8 @@ $(function(){
         reader.readAsDataURL(file);
       }); 
       for(var i=0; i<Images.length; i+=2){
-        Scenes.add(new Scene(Images.at(i),Images.at(i+1)));
+        var scene = new Scene(Images.at(i),Images.at(i+1));
+        Clusters.add(new Cluster(scene));
       }
 
     },
@@ -111,18 +169,17 @@ $(function(){
     el: $('body'),
     initialize: function(){
       this.dropZone = new DropZoneView;
-      this.sceneList = this.$("#list");
+      this.clusterList = this.$("#list");
       this.footer = this.$("#footer");
-      Scenes.bind('add', this.addOne, this);
+      Clusters.bind('add', this.addOne, this);
       this.render();
     },
     render: function(){
-      this.footer.text(Scenes.length + " scenes | " + Images.length + " images");
+      this.footer.text(Clusters.length + " clusters");
     },
-    addOne: function(scene){
-      console.log("Adding scene to appview");
-      var view = new SceneView({model:scene});
-      $(this.sceneList).append(view.render().el);
+    addOne: function(cluster){
+      var view = new ClusterView({model:cluster});
+      $(this.clusterList).append(view.render().$el);
       this.render();
     }
 

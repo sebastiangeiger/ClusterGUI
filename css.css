@@ -11,9 +11,11 @@ html, body {
 .files_hovering_over {
   background-color:red;
 }
+
 #list {
   padding-bottom: 3em;
 }
+
 #list .scene {
   background-color: lightgrey;
   border: 1px solid darkgrey;
@@ -22,6 +24,16 @@ html, body {
   max-height: 150px;
   display:table;
 }
+#list .cluster {
+  padding: 10px;
+  background-color: blue;
+  display:table;
+  margin: 10px;
+}
+#list div.selected {
+  background-color: red;
+}
+
 #list .scene img:nth-child(1) {
   padding-right: 10px;
   padding-left: 10px;
