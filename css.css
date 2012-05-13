@@ -43,12 +43,14 @@ html, body {
 #list .cluster {
   margin: 20px;
   padding: 10px;
-  background-color: grey;
+  border: 3px solid grey;
+  background-color: lightgrey;
   display:table;
   border-radius: 5px/5px;  
 }
 
 #list .cluster.selected {
+  border-color: darkred;
   background-color: red;
 }
 
