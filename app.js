@@ -11,16 +11,39 @@ $(function(){
     } 
   });
 
+  var Scene = Backbone.Model.extend({
+    initialize: function(startImage){
+      this.set({startImage:startImage});
+    } 
+  });
+
+  var SceneList = Backbone.Collection.extend({
+    model: Scene
+  });
+
   var ImageList = Backbone.Collection.extend({
     model: Image
   });
 
   var Images = new ImageList();
+  var Scenes = new SceneList();
+
+  var SceneView = Backbone.View.extend({
+    tagName: "li",
+    className: "scene",
+    template: _.template('start: <%= $(startImage).html() %> ... '),
+    render: function() {
+      var startImageView = new ImageView({model: this.model.get('startImage')});
+      $(this.el).html(this.template({startImage: startImageView.render().el}));
+      return this;
+    }
+  });
 
   var ImageView = Backbone.View.extend({
-    tagName: "li",
+    tagName: "span",
     className: "image",
     template: _.template('<%= name %>: <img src="<%= imageSrc %>"/>'),
+
     render: function() {
       $(this.el).html(this.template({name: this.model.get('name'), imageSrc:this.model.get('url')}));
       return this;
@@ -45,7 +68,9 @@ $(function(){
         var reader = new FileReader();
         reader.onload = (function(theFile){
           return function(event){
-            Images.add(new Image(theFile,event.target.result))
+            var image = new Image(theFile,event.target.result);
+            Images.add(image)
+            Scenes.add(new Scene(image));
           }
         })(file);
         reader.readAsDataURL(file);
@@ -72,17 +97,18 @@ $(function(){
     el: $('body'),
     initialize: function(){
       this.dropZone = new DropZoneView;
-      this.imageList = this.$("#list ul");
+      this.sceneList = this.$("#list ul");
       this.footer = this.$("#footer");
-      Images.bind('add', this.addOne, this);
+      Scenes.bind('add', this.addOne, this);
       this.render();
     },
     render: function(){
-      this.footer.text(Images.length + " images");
+      this.footer.text(Scenes.length + " scenes | " + Images.length + " images");
     },
-    addOne: function(image){
-      var view = new ImageView({model:image});
-      $(this.imageList).append(view.render().el);
+    addOne: function(scene){
+      console.log("Adding scene to appview");
+      var view = new SceneView({model:scene});
+      $(this.sceneList).append(view.render().el);
       this.render();
     }
 
