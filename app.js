@@ -30,8 +30,21 @@ $(function(){
     unselect: function() {
       this.set({selected:false});
     },
+    scenes: function(){
+      return this.get('scenes');
+    },
+    addScenes: function(scenes){
+      var that = this;
+      _.each(scenes, function(scene){ that.addScene(scene) });
+    },
+    addScene: function(scene){
+      this.get('scenes').push(scene);
+      this.trigger('add',scene);
+    },
     merge: function(anotherCluster){
       console.log("meeeergee");
+      this.addScenes(anotherCluster.scenes());
+      anotherCluster.destroy();
     }
   });
 
@@ -43,8 +56,9 @@ $(function(){
       } else if (this.selectedCluster() === cluster) {
         cluster.unselect();
       } else {
-        this.selectedCluster().unselect();
-        cluster.merge(this.selectedCluster());
+        var clusterToMerge = this.selectedCluster(); 
+        clusterToMerge.unselect();
+        cluster.merge(clusterToMerge);
       }
     },
     selectedCluster: function(){
@@ -68,6 +82,8 @@ $(function(){
     },
     initialize: function(){
       this.model.bind('change', this.render, this);
+      this.model.bind('destroy', this.remove, this);
+      this.model.bind('add', this.addOne, this);
       this.firstTime = true; //Working around the fact that Cluster isn't a Collection
     },
     render: function() {
@@ -85,6 +101,10 @@ $(function(){
     },
     select: function(){
       Clusters.setSelected(this.model);
+    },
+    addOne: function(scene){
+      var newSceneView = new SceneView({model: scene}); //Ideally I would just transfer the old view
+      this.$el.append(newSceneView.render().$el);
     }
   });
 
@@ -172,6 +192,7 @@ $(function(){
       this.clusterList = this.$("#list");
       this.footer = this.$("#footer");
       Clusters.bind('add', this.addOne, this);
+      // Clusters.bind('remove', this.remove, this);
       this.render();
     },
     render: function(){
