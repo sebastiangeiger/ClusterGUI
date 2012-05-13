@@ -1,3 +1,9 @@
+* {
+	margin: 0;
+}
+html, body {
+	height: 100%;
+}
 #drop_zone {
   min-height: 150px;
   border: 1px dotted gray;
@@ -8,3 +14,19 @@
 #list ul li img {
   max-height: 150px;
 }
+
+#footer {
+  background-color: lightgrey;
+  border-top: 1px solid black;
+  padding: 0.2em;
+  bottom:0;
+  position:fixed;
+  width: 100%;
+  opacity: 0.9;
+  z-index:150;
+  _position:absolute;
+  _top:expression(eval(document.documentElement.scrollTop+
+      (document.documentElement.clientHeight-this.offsetHeight)));
+  height:2em;
+}
+
