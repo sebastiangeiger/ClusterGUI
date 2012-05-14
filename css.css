@@ -21,6 +21,11 @@ html, body {
   background-color:lightgray;
 }
 
+#drop_zone.error {
+  color: lightgray;
+  background-color:darkred;
+}
+
 #list {
   padding-bottom: 3em;
 }

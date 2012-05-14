@@ -149,8 +149,16 @@ $(function(){
     uploadFile: function(evt){
       evt.stopPropagation();
       evt.preventDefault();
-      $(this.el).slideUp();
       var files = evt.originalEvent.dataTransfer.files;
+      if(this.allImages(files)){
+        this.addImagesToModel(files);
+      } else {
+        this.showErrorMessage("At least one of the files you added was not an image. Please, try again.");
+      }
+    },
+    
+    addImagesToModel: function(files) {
+      $(this.el).hide();
       _.map(files, function(file){
         var reader = new FileReader();
         var image = new Image(file);
@@ -166,23 +174,41 @@ $(function(){
         var scene = new Scene(Images.at(i),Images.at(i+1));
         Clusters.add(new Cluster(scene));
       }
+    },
 
+    showErrorMessage: function(text) {
+      this.$el.text(text);
+      if(!this.$el.hasClass("error")){
+        this.$el.addClass("error"); 
+      }
     },
 
     handleDragOver: function(evt) {
       var event = evt.originalEvent; 
       event.stopPropagation();
       event.preventDefault();
+      this.resetDragZone();
       event.dataTransfer.dropEffect = 'link'; // Explicitly show this is a link.
       $(this.el).text('Just like that!');
       $(this.el).addClass('files_hovering_over');
+    },
+
+    allImages: function(files) {
+      var imageType = /image.*/;  
+      console.log(files.size + ' images hovering');
+      return _.reduce(files, function(memo,file){ return (memo && file.type.match(imageType)) }, true);
     },
 
     handleDragLeave: function(evt) {
       var event = evt.originalEvent; 
       event.stopPropagation();
       event.preventDefault();
+      this.resetDragZone();
+    },
+
+    resetDragZone: function(){
       $(this.el).removeClass('files_hovering_over');
+      $(this.el).removeClass('error');
       this.$el.text("Drop image files here to get started!");
     }
   });
