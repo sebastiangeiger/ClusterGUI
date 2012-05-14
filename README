@@ -1,0 +1,3 @@
+The proposed workflow is:
+  - Use the prepare_files.rb script to generate folders for individual scenes from the cutfiles
+  - For every scene drag the images into the javascript app and save the cluster file
