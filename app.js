@@ -17,7 +17,13 @@ $(function(){
   var Scene = Backbone.Model.extend({
     initialize: function(startImage,endImage){
       this.set({startImage:startImage, endImage:endImage});
-    } 
+    },
+    filenames: function(){
+      return {
+        start: this.get('startImage').get('file').name,
+        end: this.get('endImage').get('file').name
+      }
+    }
   });
 
   var Cluster = Backbone.Model.extend({
@@ -42,9 +48,11 @@ $(function(){
       this.trigger('add',scene);
     },
     merge: function(anotherCluster){
-      console.log("meeeergee");
       this.addScenes(anotherCluster.scenes());
       anotherCluster.destroy();
+    },
+    filenames: function(){
+      return _.map(this.get('scenes'), function(scene) { return scene.filenames() });
     }
   });
 
@@ -195,7 +203,6 @@ $(function(){
 
     allImages: function(files) {
       var imageType = /image.*/;  
-      console.log(files.size + ' images hovering');
       return _.reduce(files, function(memo,file){ return (memo && file.type.match(imageType)) }, true);
     },
 
@@ -219,17 +226,31 @@ $(function(){
       this.dropZone = new DropZoneView;
       this.clusterList = this.$("#list");
       this.footer = this.$("#footer");
+      this.save_to_file_link = this.footer.children('#save_to_file');
+      this.number_of_clusters = this.footer.children('#number_of_clusters');
       Clusters.bind('add', this.addOne, this);
       Clusters.bind('remove', this.render, this);
+      this.save_to_file_link.hide();
       this.render();
     },
+    events:{
+      "click #save_to_file": "save_to_file"
+    },
     render: function(){
-      this.footer.text(Clusters.length + " clusters");
+      this.number_of_clusters.text(Clusters.length + " clusters");
     },
     addOne: function(cluster){
       var view = new ClusterView({model:cluster});
       $(this.clusterList).append(view.render().$el);
+      if(Clusters.length) {
+        this.save_to_file_link.show();
+      }
       this.render();
+    },
+    save_to_file: function(){
+      var content = Clusters.map(function(cluster){ return cluster.filenames() });
+      uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(content));
+      window.open(uriContent);
     }
 
   });
@@ -237,35 +258,3 @@ $(function(){
   var App = new AppView;
 
 });
-
-// class Scene
-//   attr_reader :start_image_path, :end_image_path
-//   def initialize(start_image,end_image)
-//     @start_image_path = start_image
-//     @end_image_path = end_image
-//   end
-// end
-// 
-var Scene = Backbone.Model.extend({
-  initialize: function(start_image_path) {
-    this.set({start_image_path: start_image_path});
-  }
-});
-// class Cluster
-//   attr_reader :scenes
-//   def initialize(scene)
-//     @scenes = [scene]
-//   end
-// 
-//   def merge(another_cluster)
-//     @scenes += another_cluster.scenes
-//     another_cluster.empty_out!
-//   end
-// 
-//   def empty_out!
-//     @scenes = []
-//   end
-// end
-//
-
-  
