@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby -w
+#!/usr/bin/env ruby 
 require 'optparse'
 require 'fileutils'
 
@@ -8,7 +8,12 @@ class CommandlineArguments
     argv = argv.dup
     @cuts_file = argv.shift
     @output_folder = argv.pop
-    @images = argv.dup
+    if argv.size == 1
+      pattern = argv.first
+      @images = Dir.glob(pattern)
+    else
+      @images = argv.dup
+    end
     @banner = "Usage: #{$0} cuts_file image_files output_folder"
     @errors = []
     check
@@ -49,7 +54,9 @@ end
 module Model
   class Events
     def self.load_from_file(file)
-      events = IO.read(file).collect do |line|
+      content = IO.read(file)
+      content = content.split(/\n|\r|\r\n/) if content.is_a? String #IO.read creates an array on MacOS, but not on Ubunutu
+      events = content.collect do |line|
         Event.parse(line) unless line.strip.empty?
       end  
       events.sort{|a,b| a.frame_number <=> b.frame_number}
@@ -107,7 +114,8 @@ module Model
     def frame_for(filename)
       match = Regexp.new("bbt_s(\\d{2})e(\\d{2})_(\\d+)\.").match(filename)
       raise "Could not find a match for \"#{filename}\". I am assuming the images are built up like this one for example: bbt_s01e01_000259.png" unless match
-      Integer(match[3])
+      frame_number = match[3].sub(/^0*/,"") # Removing leading 0s otherwise Integer might interpret them as octal numbers 
+      Integer(frame_number)
     end
   end
 
